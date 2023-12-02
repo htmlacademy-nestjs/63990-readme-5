@@ -1,0 +1,57 @@
+{
+  "name": "notify",
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "notify/src",
+  "projectType": "application",
+  "targets": {
+    "build": {
+      "executor": "@nx/webpack:webpack",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "target": "node",
+        "compiler": "tsc",
+        "outputPath": "dist/notify",
+        "main": "notify/src/main.ts",
+        "tsConfig": "notify/tsconfig.app.json",
+        "assets": ["notify/src/assets"],
+        "isolatedConfig": true,
+        "webpackConfig": "notify/webpack.config.js"
+      },
+      "configurations": {
+        "development": {},
+        "production": {}
+      }
+    },
+    "serve": {
+      "executor": "@nx/js:node",
+      "defaultConfiguration": "development",
+      "options": {
+        "buildTarget": "notify:build"
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "notify:build:development"
+        },
+        "production": {
+          "buildTarget": "notify:build:production"
+        }
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["notify/**/*.ts"]
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "notify/jest.config.ts"
+      }
+    }
+  },
+  "tags": []
+}
