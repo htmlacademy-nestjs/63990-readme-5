@@ -1,5 +1,6 @@
 export type EntityIdType = string;
 
 export interface Entity<T extends EntityIdType> {
-  id?: T
+  id?: T;
+  toPOJO(): Record<string, unknown>
 }

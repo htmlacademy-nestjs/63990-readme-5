@@ -41,4 +41,8 @@ export class BlogUserEntity implements AuthUser, Entity<string> {
   public async comparePassword(password: string): Promise<boolean> {
     return compare(password, this.passwordHash)
   }
+
+  static fromObject(data: AuthUser): BlogUserEntity {
+    return new BlogUserEntity(data);
+  }
 }
