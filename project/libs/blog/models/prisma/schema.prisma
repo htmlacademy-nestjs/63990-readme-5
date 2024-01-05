@@ -11,16 +11,33 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum PostStatus {
+  published
+  draft
+}
+
+enum PostType {
+  text
+  link
+  quote
+  photo
+  video
+}
+
 model Post {
   id                String   @id @default(uuid())
-  status            String
+  status            PostStatus @default(published)
   createdAt         DateTime @default(now()) @map("created_at")
   updatedAt         DateTime @updatedAt @map("updated_at")
   userId            String @map("user_id")
   comments          Comment[]
   favorite          Favorite[]
-  type              String
-  contentEntityId   String @map("content_entity_id")
+  type              PostType @default(text)
+  tags              String[]
+
+  title             String?
+  preview           String?
+  text              String?
 
   @@map("posts")
 }
@@ -47,16 +64,4 @@ model Favorite {
   updatedAt   DateTime  @updatedAt @map("updated_at")
 
   @@map("favorites")
-}
-
-
-model TextPost {
-  id                String   @id @default(uuid())
-  createdAt         DateTime @default(now()) @map("created_at")
-  updatedAt         DateTime @updatedAt @map("updated_at")
-  title             String
-  preview           String
-  text              String
-
-  @@map("text_posts")
 }
