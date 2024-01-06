@@ -6,4 +6,13 @@ export class PostRdo {
 
   @Expose()
   public tags: string[];
+
+  @Expose()
+  public userId: string;
+
+  @Expose()
+  public status: string[];
+
+  @Expose()
+  public type: string[];
 }

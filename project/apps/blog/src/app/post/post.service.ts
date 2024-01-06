@@ -35,15 +35,13 @@ export class PostService {
     return newPost;
   }
 
-  // public async deleteCategory(id: string): Promise<void> {
-  //   try {
-  //     await this.blogCategoryRepository.deleteById(id);
-  //   } catch {
-  //     // TODO. Обратите внимание. Ошибки могут быть разными
-  //     // Вы должны реагировать на них по-разному.
-  //     throw new NotFoundException(`Category with ID ${id} not found`);
-  //   }
-  // }
+  public async deletePost(id: string): Promise<void> {
+    try {
+      await this.postRepository.deleteById(id);
+    } catch {
+      throw new NotFoundException(`Post with ID ${id} not found`);
+    }
+  }
 
   // public async updateCategory(id: string, dto: UpdateCategoryDto): Promise<BlogCategoryEntity> {
   //   const blogCategoryEntity = new BlogCategoryEntity(dto);

@@ -1,10 +1,11 @@
-import { Controller, Get, Param, Post, Body, Delete, Patch, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Param, Post, Body, Delete, Patch, HttpCode, HttpStatus, ValidationPipe } from '@nestjs/common';
 import { CreatePostDto } from './dto/create-post.dto';
 import { fillDto } from '@project/libs/helpers';
 import { PostService } from './post.service';
 import { PostRdo } from './rdo/post.rdo';
+import { postRdoMap } from './rdo/get-post-rdo';
 
-@Controller('categories')
+@Controller('posts')
 export class PostController {
   constructor(
     private readonly postService: PostService
@@ -17,24 +18,28 @@ export class PostController {
 
   @Get('/')
   public async index() {
-    // TODO: types
     const blogPostsEntities = await this.postService.getAllPosts();
-    const posts = blogPostsEntities.map((blogPost) => blogPost.toPOJO());
-    return fillDto(PostRdo, posts);
+    const posts = blogPostsEntities.map((blogPost) => {
+      const rdo = postRdoMap[blogPost.type];
+      return fillDto(rdo, blogPost.toPOJO())
+    });
+    return posts;
   }
 
   @Post('/')
   public async create(@Body() dto: CreatePostDto) {
     // TODO: types
-    const newCategory = await this.postService.createPost(dto);
-    return fillDto(PostRdo, newCategory.toPOJO());
+    const newPost = await this.postService.createPost(dto);
+
+    const rdo = postRdoMap[newPost.type];
+    return fillDto(rdo, newPost.toPOJO());
   }
 
-  // @Delete('/:id')
-  // @HttpCode(HttpStatus.NO_CONTENT)
-  // public async destroy(@Param('id') id: string) {
-  //   await this.blogCategoryService.deleteCategory(id);
-  // }
+  @Delete('/:id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  public async destroy(@Param('id') id: string) {
+    await this.postService.deletePost(id);
+  }
 
   // @Patch('/:id')
   // public async update(@Param('id') id: string, @Body() dto: UpdateCategoryDto) {

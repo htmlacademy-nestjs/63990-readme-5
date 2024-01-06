@@ -18,5 +18,5 @@ export class CreateTextPostDto extends CreatePostDto {
     description: 'Post preview',
     example: 'Node JS preview'
   })
-  public userId: string;
+  public preview: string;
 }
