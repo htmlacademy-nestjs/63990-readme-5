@@ -4,31 +4,34 @@ import { PostRepository } from './post.repository';
 import { PostEntityType } from './post.type';
 import { CreatePostDto } from './dto/create-post.dto';
 import { getEntityByType } from './entities/entities-types.map';
+import { UpdatePostDto } from './dto/update-post.dto';
+import { BlogTagService } from '../tag/tag.service';
+import { BlogPostQuery } from './query/post.query';
+import { PaginationResult } from '@project/shared/types';
+import { createEntity } from './entities/create-entity';
+import { TextPostEntity } from './entities/text-post.entity';
+import { PhotoPostEntity } from './entities/photo-post.entity';
+import { CreateTextPostDto } from './dto/create-text-post.dto';
 
 @Injectable()
 export class PostService {
   constructor(
-    private readonly postRepository: PostRepository
+    private readonly postRepository: PostRepository,
+    private readonly tagService: BlogTagService,
   ) {}
 
   public async getPost(id: string): Promise<PostEntityType> {
     return this.postRepository.findById(id);
   }
 
-  public async getAllPosts(): Promise<PostEntityType[]> {
-    return await this.postRepository.find();
+  public async getAllPosts(query?: BlogPostQuery): Promise<PaginationResult<PostEntityType>> {
+    return this.postRepository.find(query);
   }
 
-  public async createPost(dto: CreatePostDto): Promise<PostEntityType> {
-    // const existsPost = (await this.postRepository.find({ title: dto.title })).at(0);
-
-    // if (existsPost) {
-    //   throw new ConflictException('A post with the title already exists');
-    // }
-
-    const postType = getEntityByType(dto.type);
-
-    const newPost = new postType(dto);
+  // TODO: tdo types
+  public async createPost(dto: CreateTextPostDto): Promise<PostEntityType> {
+    const tags = await this.tagService.getTagsByIds(dto.tags);
+    const newPost = TextPostEntity.fromDto(dto, tags);
 
     await this.postRepository.save(newPost);
 
@@ -43,14 +46,32 @@ export class PostService {
     }
   }
 
-  // public async updateCategory(id: string, dto: UpdateCategoryDto): Promise<BlogCategoryEntity> {
-  //   const blogCategoryEntity = new BlogCategoryEntity(dto);
+  public async updatePost(id: string, dto: UpdatePostDto): Promise<PostEntityType> {
+    const existsPost = await this.postRepository.findById(id);
+    let isSameCategories = true;
+    let hasChanges = false;
 
-  //   try {
-  //     const updatedCategory = await this.blogCategoryRepository.update(id, blogCategoryEntity);
-  //     return updatedCategory;
-  //   } catch {
-  //     throw new NotFoundException(`Category with ID ${id} not found`);
-  //   }
-  // }
+    for (const [key, value] of Object.entries(dto)) {
+      if (value !== undefined && key !== 'categories' && existsPost[key] !== value) {
+        existsPost[key] = value;
+        hasChanges = true;
+      }
+
+      if (key === 'categories' && value) {
+        const currentCategoryIds = existsPost.tags.map((category) => category.id);
+        isSameCategories = currentCategoryIds.length === value.length &&
+          currentCategoryIds.some((categoryId) => value.includes(categoryId));
+
+        if (! isSameCategories) {
+          existsPost.tags = await this.tagService.getTagsByIds(dto.tags);
+        }
+      }
+    }
+
+    if (isSameCategories && ! hasChanges) {
+      return existsPost;
+    }
+
+    return this.postRepository.update(id, existsPost);
+  }
 }

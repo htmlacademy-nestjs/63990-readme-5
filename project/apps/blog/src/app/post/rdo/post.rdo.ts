@@ -1,11 +1,14 @@
-import { Expose } from 'class-transformer';
+import { PostType } from '@project/shared/types';
+import { Expose, Type } from 'class-transformer';
+import { TagRdo } from '../../tag/rdo/tag.rdo';
 
 export class PostRdo {
   @Expose()
   public id: string;
 
   @Expose()
-  public tags: string[];
+  @Type(() => TagRdo)
+  public categories: TagRdo[];
 
   @Expose()
   public userId: string;
@@ -14,5 +17,5 @@ export class PostRdo {
   public status: string[];
 
   @Expose()
-  public type: string[];
+  public type: PostType;
 }

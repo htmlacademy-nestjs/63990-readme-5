@@ -1,9 +1,13 @@
-import { Controller, Get, Param, Post, Body, Delete, Patch, HttpCode, HttpStatus, ValidationPipe } from '@nestjs/common';
+import { Controller, Get, Param, Post, Body, Delete, Patch, HttpCode, HttpStatus, ValidationPipe, UsePipes, Query } from '@nestjs/common';
 import { CreatePostDto } from './dto/create-post.dto';
-import { fillDto } from '@project/libs/helpers';
+import { fillDto } from '@project/shared/helpers';
 import { PostService } from './post.service';
-import { PostRdo } from './rdo/post.rdo';
-import { postRdoMap } from './rdo/get-post-rdo';
+import { postRdoMap } from './rdo/post-rdo.map';
+import { PostValidationPipe } from './pipes/post-validation.pipe';
+import { UpdatePostDto } from './dto/update-post.dto';
+import { BlogPostQuery } from './query/post.query';
+import { PostWithPaginationRdo } from './rdo/post-with-pagination.rdo';
+import { CreateTextPostDto } from './dto/create-text-post.dto';
 
 @Controller('posts')
 export class PostController {
@@ -13,22 +17,24 @@ export class PostController {
 
   @Get('/:id')
   public async show(@Param('id') id: string) {
-    return this.postService.getPost(id);
+    const post = await this.postService.getPost(id);
+    const rdo = postRdoMap[post.type];
+    return fillDto(rdo, post.toPOJO());
   }
 
   @Get('/')
-  public async index() {
-    const blogPostsEntities = await this.postService.getAllPosts();
-    const posts = blogPostsEntities.map((blogPost) => {
-      const rdo = postRdoMap[blogPost.type];
-      return fillDto(rdo, blogPost.toPOJO())
-    });
-    return posts;
+  public async index(@Query() query: BlogPostQuery) {
+    const postsWithPagination = await this.postService.getAllPosts(query);
+    const result = {
+      ...postsWithPagination,
+      entities: postsWithPagination.entities.map((post) => post.toPOJO()),
+    }
+    return fillDto(PostWithPaginationRdo, result);
   }
 
   @Post('/')
-  public async create(@Body() dto: CreatePostDto) {
-    // TODO: types
+  @UsePipes(new PostValidationPipe('create'))
+  public async create(@Body() dto: CreateTextPostDto) { // TODO: dto types
     const newPost = await this.postService.createPost(dto);
 
     const rdo = postRdoMap[newPost.type];
@@ -41,9 +47,12 @@ export class PostController {
     await this.postService.deletePost(id);
   }
 
-  // @Patch('/:id')
-  // public async update(@Param('id') id: string, @Body() dto: UpdateCategoryDto) {
-  //   const updatedCategory = await this.blogCategoryService.updateCategory(id, dto);
-  //   return fillDto(CategoryRdo, updatedCategory.toPOJO());
-  // }
+  @Patch('/:id')
+  @UsePipes(new PostValidationPipe('update'))
+  public async update(@Param('id') id: string, @Body() dto: UpdatePostDto) {
+    const updatedPost = await this.postService.updatePost(id, dto);
+
+    const rdo = postRdoMap[updatedPost.type];
+    return fillDto(rdo, updatedPost.toPOJO());
+  }
 }

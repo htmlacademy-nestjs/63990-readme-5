@@ -1,4 +1,4 @@
-import { PostType } from '@project/libs/shared-types';
+import { PostType } from '@project/shared/types';
 import { TextPostEntity } from './text-post.entity';
 import { PhotoPostEntity } from './photo-post.entity';
 

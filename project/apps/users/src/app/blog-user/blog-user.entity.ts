@@ -1,5 +1,5 @@
-import { AuthUser } from '@project/libs/shared-types'
-import { Entity } from '@project/libs/core'
+import { AuthUser } from '@project/shared/types'
+import { Entity } from '@project/shared/core'
 import { compare, genSalt, hash } from 'bcrypt';
 import { SALT_ROUNDS } from './blog-user.constant';
 

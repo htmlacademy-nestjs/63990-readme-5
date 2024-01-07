@@ -23,7 +23,7 @@
             "depConstraints": [
               {
                 "sourceTag": "*",
-                "onlyDependOnLibsWithTags": [
+                "onlyDependOnsharedWithTags": [
                   "*"
                 ]
               }
