@@ -11,7 +11,7 @@ services:
       MONGO_INITDB_DATABASE: readme-users
 
     ports:
-      - 27017:27017
+      - 27018:27017
 
     volumes:
       - readme.mongo.users:/data/db
@@ -22,10 +22,10 @@ services:
       timeout: 10s
       retries: 5
 
-  typeoteka.user.mongo.ui:
+  readme.user.mongo.ui:
     image: mongo-express
     restart: always
-    container_name: typeoteka.user.mongo.ui
+    container_name: readme.user.mongo.ui
     ports:
       - 8081:8081
     environment:
