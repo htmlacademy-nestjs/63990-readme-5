@@ -1,4 +1,4 @@
-import { BaseMongoRepository } from '@project/libs/core';
+import { BaseMongoRepository } from '@project/shared/core';
 import { BlogUserEntity } from './blog-user.entity';
 import { Injectable } from '@nestjs/common';
 import { BlogUserModel } from './blog-user.model';

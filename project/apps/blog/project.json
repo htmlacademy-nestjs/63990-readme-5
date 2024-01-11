@@ -1,22 +1,26 @@
 {
   "name": "blog",
-  "$schema": "../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "blog/src",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/blog/src",
   "projectType": "application",
   "targets": {
     "build": {
       "executor": "@nx/webpack:webpack",
-      "outputs": ["{options.outputPath}"],
+      "outputs": [
+        "{options.outputPath}"
+      ],
       "defaultConfiguration": "production",
       "options": {
         "target": "node",
         "compiler": "tsc",
-        "outputPath": "dist/blog",
-        "main": "blog/src/main.ts",
-        "tsConfig": "blog/tsconfig.app.json",
-        "assets": ["blog/src/assets"],
+        "outputPath": "dist/apps/blog",
+        "main": "apps/blog/src/main.ts",
+        "tsConfig": "apps/blog/tsconfig.app.json",
+        "assets": [
+          "apps/blog/src/assets"
+        ],
         "isolatedConfig": true,
-        "webpackConfig": "blog/webpack.config.js"
+        "webpackConfig": "apps/blog/webpack.config.js"
       },
       "configurations": {
         "development": {},
@@ -40,51 +44,57 @@
     },
     "lint": {
       "executor": "@nx/eslint:lint",
-      "outputs": ["{options.outputFile}"],
+      "outputs": [
+        "{options.outputFile}"
+      ],
       "options": {
-        "lintFilePatterns": ["blog/**/*.ts"]
+        "lintFilePatterns": [
+          "apps/blog/**/*.ts"
+        ]
       }
     },
     "test": {
       "executor": "@nx/jest:jest",
-      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "outputs": [
+        "{workspaceRoot}/coverage/{projectRoot}"
+      ],
       "options": {
-        "jestConfig": "blog/jest.config.ts"
+        "jestConfig": "apps/blog/jest.config.ts"
       }
     },
     "db:lint": {
       "executor": "nx:run-commands",
       "options": {
         "command": "npx prisma validate --schema ./schema.prisma",
-        "cwd": "libs/blog/models/prisma"
+        "cwd": "shared/blog/models/prisma"
       }
     },
     "db:migrate": {
       "executor": "nx:run-commands",
       "options": {
         "command": "npx prisma migrate dev --schema ./schema.prisma --skip-generate --skip-seed",
-        "cwd": "libs/blog/models/prisma"
+        "cwd": "shared/blog/models/prisma"
       }
     },
     "db:reset": {
       "executor": "nx:run-commands",
       "options": {
         "command": "npx prisma migrate reset --schema ./schema.prisma --force --skip-generate --skip-seed",
-        "cwd": "libs/blog/models/prisma"
+        "cwd": "shared/blog/models/prisma"
       }
     },
     "db:generate": {
       "executor": "nx:run-commands",
       "options": {
         "command": "npx prisma generate --schema ./schema.prisma",
-        "cwd": "libs/blog/models/prisma"
+        "cwd": "shared/blog/models/prisma"
       }
     },
     "db:seed": {
       "executor": "nx:run-commands",
       "options": {
         "command": "npx ts-node seed.ts",
-        "cwd": "libs/blog/models/prisma"
+        "cwd": "shared/blog/models/prisma"
       }
     }
   },

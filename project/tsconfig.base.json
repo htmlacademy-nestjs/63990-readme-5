@@ -16,11 +16,14 @@
     "baseUrl": ".",
     "paths": {
       "@project/blog": ["blog/src/index.ts"],
-      "@project/blog/models": ["libs/blog/models/src/index.ts"],
-      "@project/libs/config/users": ["libs/config/users/src/index.ts"],
-      "@project/libs/core": ["libs/core/src/index.ts"],
-      "@project/libs/helpers": ["libs/helpers/src/index.ts"],
-      "@project/libs/shared-types": ["libs/shared-types/src/index.ts"]
+      "@project/shared/blog/models": ["shared/blog/models/src/index.ts"],
+      "@project/shared/config/file-vault": [
+        "shared/config/file-vault/src/index.ts"
+      ],
+      "@project/shared/config/users": ["shared/config/users/src/index.ts"],
+      "@project/shared/core": ["shared/core/src/index.ts"],
+      "@project/shared/helpers": ["shared/helpers/src/index.ts"],
+      "@project/shared/types": ["shared/types/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]
