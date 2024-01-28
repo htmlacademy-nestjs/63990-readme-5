@@ -25,6 +25,12 @@ export class BlogUserModel extends Document implements AuthUser {
     required: true,
   })
   public passwordHash: string;
+
+  public id?: string;
 }
 
 export const BlogUserSchema = SchemaFactory.createForClass(BlogUserModel);
+
+BlogUserSchema.virtual('id').get(function() {
+  return this._id.toString();
+});

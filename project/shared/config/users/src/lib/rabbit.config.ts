@@ -24,7 +24,7 @@ const validationSchema = Joi.object({
 function validateConfig(config: RabbitConfig): void {
   const { error } = validationSchema.validate(config, { abortEarly: true });
   if (error) {
-    throw new Error(`[FileVault Config Validation Error]: ${error.message}`);
+    throw new Error(`[RabbitMQ Config Validation Error]: ${error.message}`);
   }
 }
 
