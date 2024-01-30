@@ -37,15 +37,13 @@ export class BlogTagRepository extends BasePostgresRepository<BlogTagEntity, Tag
   }
 
   public async findByTitle(title: string): Promise<BlogTagEntity> {
+    console.log(title)
+
     const document = await this.client.tags.findFirst({
       where: {
         title,
       },
     });
-
-    if (! document) {
-      throw new NotFoundException(`Tag with title ${title} not found.`);
-    }
 
     return this.createEntityFromDocument(document);
   }

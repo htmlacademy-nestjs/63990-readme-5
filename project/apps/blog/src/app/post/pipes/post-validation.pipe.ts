@@ -8,14 +8,13 @@ type PostOperationtype = 'create' | 'update'
 
 @Injectable()
 export class PostValidationPipe implements PipeTransform<CreatePostDto> {
-  operationType: PostOperationtype
-
-  constructor(operationType: PostOperationtype) {}
+  constructor(private operationType: PostOperationtype) {}
 
   async transform(value: CreatePostDto) {
     const typeDto = this.operationType === 'create' 
       ? createPostDtoMap[value.type] 
       : updatePostDtoMap[value.type];
+      
     const object = plainToInstance(typeDto, value);
 
     const errors = await validate(object);
