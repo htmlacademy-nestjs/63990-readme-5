@@ -12,6 +12,7 @@ export * from './lib/sort-direction.interface';
 export * from './lib/pagination.interface';
 
 export * from './lib/post/tag.interface';
+export * from './lib/post/like.interface';
 
 export * from './lib/token-payload.interface';
 export * from './lib/token.interface';

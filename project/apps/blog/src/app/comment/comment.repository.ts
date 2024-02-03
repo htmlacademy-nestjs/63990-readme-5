@@ -5,6 +5,7 @@ import { PrismaClientService } from '@project/shared/blog/models';
 import { Comment } from '@project/shared/types';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { MAX_COMMENTt_LIMIT } from './comment.constant';
+import { CommentQuery } from './query/comment.query';
 
 @Injectable()
 export class CommentRepository extends BasePostgresRepository<CommentEntity, Comment> {
@@ -29,7 +30,7 @@ export class CommentRepository extends BasePostgresRepository<CommentEntity, Com
   }
 
   public async deleteById(id: string): Promise<void> {
-    await this.client.tags.delete({
+    await this.client.comment.delete({
       where: {
         id,
       }
@@ -51,11 +52,16 @@ export class CommentRepository extends BasePostgresRepository<CommentEntity, Com
     return this.createEntityFromDocument(comment);
   }
 
-  public async findByPostId(postId: string): Promise<CommentEntity[]> {
+  public async findByPostId(postId: string, query?: CommentQuery): Promise<CommentEntity[]> {
+    const skip = query?.page && query?.limit ? (query.page - 1) * query.limit : undefined;
+    const take = query?.limit;
+
     const comments = await this.client.comment.findMany({
       where: {
         postId
-      }
+      },
+      skip,
+      take
     })
 
     return comments.map((comment) => this.createEntityFromDocument(comment))

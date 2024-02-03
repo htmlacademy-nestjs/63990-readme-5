@@ -3,7 +3,7 @@ import { HttpService } from '@nestjs/axios';
 import { ApplicationServiceURL } from '../app.config';
 
 @Injectable()
-export class CheckAuthGuard implements CanActivate {
+export class HasTokenGuard implements CanActivate {
   constructor(
     private readonly httpService: HttpService,
   ) {}
@@ -11,15 +11,15 @@ export class CheckAuthGuard implements CanActivate {
   public async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
 
-    console.log('asd')
+    if (!request.headers['authorization']) {
+      return true;
+    }
 
     const { data } = await this.httpService.axiosRef.post(`${ApplicationServiceURL.Users}/check`, {}, {
       headers: {
         'Authorization': request.headers['authorization']
       }
     })
-
-
 
     request['user'] = data;
     return true;

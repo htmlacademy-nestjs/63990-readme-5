@@ -38,6 +38,7 @@ model Post {
   title             String?
   preview           String?
   text              String?
+  photo             String?
 
   @@map("posts")
 }

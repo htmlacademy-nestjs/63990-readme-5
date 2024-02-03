@@ -1,23 +1,22 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaClientService } from '@project/shared/blog/models';
 import { BasePostgresRepository } from '@project/shared/core';
-import { PostEntityType, PostType } from './post.type';
-import { createEntity } from './entities/create-entity';
 import { PostFilter, postFilterToPrismaFilter } from './post.filter';
 import { MAX_POST_LIMIT } from './post.constant';
 import { Prisma } from '@prisma/client';
 import { BlogPostQuery } from './query/post.query';
-import { PaginationResult } from '@project/shared/types';
+import { PaginationResult, Post } from '@project/shared/types';
+import { PostEntity } from './entities/post.entity';
 
 @Injectable()
-export class PostRepository extends BasePostgresRepository<PostEntityType, PostType> {
+export class PostRepository extends BasePostgresRepository<PostEntity, Post> {
   constructor(
     protected readonly client: PrismaClientService,
   ) {
-    super(client, createEntity);
+    super(client, PostEntity.fromObject);
   }
 
-  public async save(entity: PostEntityType): Promise<PostEntityType> {
+  public async save(entity: PostEntity): Promise<PostEntity> {
     const pojoEntity = entity.toPOJO();
     const record = await this.client.post.create({
       data: {
@@ -28,7 +27,8 @@ export class PostRepository extends BasePostgresRepository<PostEntityType, PostT
         },
         comments: {
           connect: []
-        }
+        },
+        like: {}
       }
     });
 
@@ -36,7 +36,7 @@ export class PostRepository extends BasePostgresRepository<PostEntityType, PostT
     return entity;
   }
 
-  public async findById(id: string): Promise<PostEntityType> {
+  public async findById(id: string): Promise<PostEntity> {
     const document = await this.client.post.findFirst({
       where: {
         id,
@@ -58,11 +58,12 @@ export class PostRepository extends BasePostgresRepository<PostEntityType, PostT
     return Math.ceil(totalCount / limit);
   }
 
-  public async find(query?: BlogPostQuery): Promise<PaginationResult<PostEntityType>> {
+  public async find(query?: BlogPostQuery, userId?: string): Promise<PaginationResult<PostEntity>> {
     const skip = query?.page && query?.limit ? (query.page - 1) * query.limit : undefined;
     const take = query?.limit;
     const where: Prisma.PostWhereInput = {};
     const orderBy: Prisma.PostOrderByWithRelationInput = {};
+    const likeWhere: Prisma.LikeWhereInput = {}
 
     if (query?.tags) {
       where.tags = {
@@ -78,18 +79,36 @@ export class PostRepository extends BasePostgresRepository<PostEntityType, PostT
       orderBy.createdAt = query.sortDirection;
     }
 
+    if (userId) {
+      likeWhere.userId = userId
+    }
+
     const [records, postCount] = await Promise.all([
-      this.client.post.findMany({ where, orderBy, skip, take,
+      this.client.post.findMany({ 
+        where, 
+        orderBy, 
+        skip, 
+        take,
         include: {
           tags: true,
           comments: true,
+          like: userId ? { where: likeWhere } : undefined,
+          _count: {
+            select: { like: true, comments: true },
+          },
         },
       }),
+
       this.getPostCount(where),
     ]);
 
+    console.log(records)
+
     return {
-      entities: records.map((record) => this.createEntityFromDocument(record)),
+      entities: records.map((record) => this.createEntityFromDocument({
+        ...record,
+        like: !!record.like?.length
+      })),
       currentPage: query?.page,
       totalPages: this.calculatePostsPage(postCount, take),
       itemsPerPage: take,
@@ -105,8 +124,21 @@ export class PostRepository extends BasePostgresRepository<PostEntityType, PostT
     });
   }
 
-  public async update(id: string, entity: PostEntityType): Promise<PostEntityType> {
+  public async update(id: string, entity: PostEntity): Promise<PostEntity> {
     const pojoEntity = entity.toPOJO();
+
+    const updatedData: Pick<Post, 'title' | 'text' | 'preview' | 'photo'> = {};
+
+    if (entity.type === 'text') {
+      updatedData.title = entity.title;
+      updatedData.text = entity.text;
+      updatedData.preview = entity.preview;
+    }
+
+    if (entity.type === 'photo') {
+      updatedData.photo = entity.photo;
+    }
+
     const updatedPost = await this.client.post.update({
       where: { id },
       data: {
@@ -115,7 +147,7 @@ export class PostRepository extends BasePostgresRepository<PostEntityType, PostT
         },
         type: entity.type,
         status: entity.status,
-        // TODO: fields by post type
+        ...updatedData
       },
       include: {
         tags: true,
