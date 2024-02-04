@@ -10,7 +10,6 @@ export class LikeController {
 
   @Post('/:postId/like')
   public async like(@Body() { userId }, @Param('postId') postId: string) {
-    console.log(postId)
     return this.likeService.likePost(postId, userId);
   }
 

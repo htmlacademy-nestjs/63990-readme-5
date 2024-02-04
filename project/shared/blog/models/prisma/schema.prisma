@@ -40,6 +40,10 @@ model Post {
   text              String?
   photo             String?
 
+  originalId        String?
+  originalUserId    String? @map("original_user_id")
+  isRepost          Boolean?
+
   @@map("posts")
 }
 

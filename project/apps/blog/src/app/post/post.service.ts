@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 
 import { PostRepository } from './post.repository';
 import { CreatePostDto } from './dto/create-post.dto';
@@ -30,6 +30,39 @@ export class PostService {
     await this.postRepository.save(newPost);
 
     return newPost;
+  }
+
+  public async repost(postId: string, userId: string): Promise<PostEntity> {
+    const originalPost = await this.postRepository.findById(postId);
+
+    if (!originalPost) {
+      throw new NotFoundException(`Post with ID ${postId} not found`);
+    }
+
+    if (originalPost.userId === userId) {
+      throw new BadRequestException(`You can't repost your own post`);
+    }
+
+    const existRepost = await this.postRepository.findRepost(postId, userId);
+
+    if (existRepost) {
+      throw new BadRequestException(`You can't repost post more than 1 time`);
+    }
+
+    const repost = PostEntity.fromObject({
+      ...originalPost.toPOJO(),
+      id: undefined,
+      userId: userId,
+      originalId: originalPost.id,
+      originalUserId: originalPost.userId,
+      isRepost: true,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    });
+
+    await this.postRepository.save(repost);
+
+    return repost;
   }
 
   public async deletePost(id: string): Promise<void> {

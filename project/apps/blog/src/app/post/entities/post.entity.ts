@@ -18,6 +18,12 @@ export class PostEntity implements Post, Entity<string, Post> {
   public preview?: string;
   public photo?: string;
   public like?: boolean;
+  public likesCount?: number;
+  public commentsCount?: number;
+
+  public originalId?: string;
+  public originalUserId?: string;
+  public isRepost?: boolean;
   // public comments: BlogCommentEntity[];
 
   // constructor(post: Post) {
@@ -33,6 +39,7 @@ export class PostEntity implements Post, Entity<string, Post> {
     // this.comments = [];
     this.createdAt = post.createdAt ?? undefined;
     this.updatedAt = post.updatedAt ?? undefined;
+ 
 
     if (post.type === 'text') {
       this.title =  post.title ?? undefined;
@@ -45,6 +52,12 @@ export class PostEntity implements Post, Entity<string, Post> {
     }
 
     this.like = post.like;
+    this.likesCount = post.likesCount;
+    this.commentsCount = post.commentsCount;
+
+    this.originalId = post.originalId;
+    this.originalUserId = post.originalUserId;
+    this.isRepost = post.isRepost;
 
     return this;
   }
@@ -59,7 +72,13 @@ export class PostEntity implements Post, Entity<string, Post> {
       updatedAt: this.updatedAt,
       // comments: [],
       tags: this.tags.map((tagEntity) => tagEntity.toPOJO()),
-      like: this.like
+      like: this.like,
+      likesCount: this.likesCount,
+      commentsCount: this.commentsCount,
+
+      originalId: this.originalId,
+      originalUserId: this.originalUserId,
+      isRepost: this.isRepost
     }
 
     if (this.type === 'text') {
@@ -93,8 +112,8 @@ export class PostEntity implements Post, Entity<string, Post> {
 
     if (dto.type === 'text') {
       entity.title = dto.title;
-      entity.text = dto.title;
-      entity.preview = dto.title;
+      entity.text = dto.text;
+      entity.preview = dto.preview;
     }
 
     if (dto.type === 'photo') {

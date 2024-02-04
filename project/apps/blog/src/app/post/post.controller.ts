@@ -54,4 +54,16 @@ export class PostController {
     const rdo = postRdoMap[updatedPost.type];
     return fillDto(rdo, updatedPost.toPOJO());
   }
+
+  @Post('/:id/repost')
+  public async repost(
+    @Body() { userId }: {userId: string},
+    @Param('id') id: string
+  ) {
+    console.log(userId)
+    const repost = await this.postService.repost(id, userId);
+
+    const rdo = postRdoMap[repost.type];
+    return fillDto(rdo, repost.toPOJO());
+  }
 }

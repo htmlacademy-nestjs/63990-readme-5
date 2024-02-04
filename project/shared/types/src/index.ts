@@ -9,6 +9,7 @@ export * from './lib/post/post.interface';
 export * from './lib/post/text-post.interface';
 export * from './lib/post/photo-post.interface';
 export * from './lib/sort-direction.interface';
+export * from './lib/sort-property.interface';
 export * from './lib/pagination.interface';
 
 export * from './lib/post/tag.interface';

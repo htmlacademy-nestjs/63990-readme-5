@@ -16,4 +16,10 @@ export interface Post {
   preview?: string;
   photo?: string;
   like?: boolean;
+  likesCount?: number;
+  commentsCount?: number;
+
+  originalUserId?: string;
+  originalId?: string;
+  isRepost?: boolean;
 }

@@ -8,6 +8,7 @@ import { CreatePostDto } from '../../../blog/src/app/post/dto/create-post.dto';
 import { UpdatePostDto } from '../../../blog/src/app/post/dto/update-post.dto';
 import { BlogPostQuery } from './query/post.query';
 import { HasTokenGuard } from './guards/has-token.guard';
+import { AuthUser, PaginationResult, Post as BlogPost } from '@project/shared/types';
 
 @Controller('posts')
 @UseFilters(AxiosExceptionFilter)
@@ -24,11 +25,24 @@ export class BlogController {
     @Body() dto: {userId: string},
     @Query() query: BlogPostQuery
   ) {
-    const { data } = await this.httpService.axiosRef.get(`${ApplicationServiceURL.Blog}`, {
+    const { data: posts } = await this.httpService.axiosRef.get<PaginationResult<BlogPost>>(`${ApplicationServiceURL.Blog}`, {
       data: dto,
       params: query
     });
-    return data;
+
+    const { data: users } = await this.httpService.axiosRef.get<AuthUser[]>(`${ApplicationServiceURL.Users}/findUsers`, {
+      data: {
+        userIds: [...new Set(posts.entities.map((post) => post.userId))]
+      }
+    })
+
+    return {
+      ...posts,
+      entities: posts.entities.map((post) => ({
+        ...post,
+        user: users.find((user) => post.userId === user.id) ?? {}
+      }))
+    };
   }
 
   @UseGuards(CheckAuthGuard)
@@ -81,6 +95,17 @@ export class BlogController {
     const { data } = await this.httpService.axiosRef.delete(`${ApplicationServiceURL.Blog}/${id}/like`, {
       data: dto
     });
+    return data;
+  }
+
+  @UseGuards(CheckAuthGuard)
+  @UseInterceptors(UseridInterceptor)
+  @Post('/:id/repost')
+  public async repost(
+    @Param('id') id: string,
+    @Body() dto: {userId: string}
+  ) {
+    const { data } = await this.httpService.axiosRef.post(`${ApplicationServiceURL.Blog}/${id}/repost`, dto);
     return data;
   }
 

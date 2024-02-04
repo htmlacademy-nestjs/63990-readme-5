@@ -18,4 +18,22 @@ export class PostRdo {
 
   @Expose()
   public type: PostType;
+
+  @Expose()
+  public like: boolean;
+
+  @Expose()
+  public likesCount: number;
+
+  @Expose()
+  public commentsCount: number;
+
+  @Expose()
+  public originalId: string;
+
+  @Expose()
+  public originalUserId: string;
+
+  @Expose()
+  public isRepost: boolean;
 }

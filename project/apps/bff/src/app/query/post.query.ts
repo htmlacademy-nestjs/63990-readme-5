@@ -1,8 +1,8 @@
 import { Transform } from 'class-transformer';
-import { IsArray, IsIn, IsNumber, IsOptional, IsUUID } from 'class-validator';
+import { IsArray, IsEnum, IsIn, IsNumber, IsOptional, IsString, IsUUID } from 'class-validator';
 
 import { DEFAULT_PAGE_COUNT, DEFAULT_POST_COUNT_LIMIT, DEFAULT_SORT_DIRECTION } from '../post.constant';
-import { SortDirection } from '@project/shared/types';
+import { PostType, SortDirection } from '@project/shared/types';
 
 
 export class BlogPostQuery {
@@ -23,4 +23,12 @@ export class BlogPostQuery {
   @Transform(({ value }) => +value || DEFAULT_PAGE_COUNT)
   @IsOptional()
   public page: number = DEFAULT_PAGE_COUNT;
+
+  @IsString()
+  @IsOptional()
+  public userId: string;
+
+  @IsIn(['text', 'photo'])
+  @IsOptional()
+  public type: PostType;
 }
