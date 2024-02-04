@@ -1,17 +1,12 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 
 import { PostRepository } from './post.repository';
-import { PostEntityType } from './post.type';
 import { CreatePostDto } from './dto/create-post.dto';
-import { getEntityByType } from './entities/entities-types.map';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { BlogTagService } from '../tag/tag.service';
 import { BlogPostQuery } from './query/post.query';
 import { PaginationResult } from '@project/shared/types';
-import { createEntity } from './entities/create-entity';
-import { TextPostEntity } from './entities/text-post.entity';
-import { PhotoPostEntity } from './entities/photo-post.entity';
-import { CreateTextPostDto } from './dto/create-text-post.dto';
+import { PostEntity } from './entities/post.entity';
 
 @Injectable()
 export class PostService {
@@ -20,22 +15,54 @@ export class PostService {
     private readonly tagService: BlogTagService,
   ) {}
 
-  public async getPost(id: string): Promise<PostEntityType> {
+  public async getPost(id: string): Promise<PostEntity> {
     return this.postRepository.findById(id);
   }
 
-  public async getAllPosts(query?: BlogPostQuery): Promise<PaginationResult<PostEntityType>> {
-    return this.postRepository.find(query);
+  public async getAllPosts(query?: BlogPostQuery, userId?: string): Promise<PaginationResult<PostEntity>> {
+    return this.postRepository.find(query, userId);
   }
 
-  // TODO: tdo types
-  public async createPost(dto: CreateTextPostDto): Promise<PostEntityType> {
+  public async createPost(dto: CreatePostDto): Promise<PostEntity> {
     const tags = await this.tagService.getTagsByIds(dto.tags);
-    const newPost = TextPostEntity.fromDto(dto, tags);
+    const newPost = PostEntity.fromDto(dto, tags);
 
     await this.postRepository.save(newPost);
 
     return newPost;
+  }
+
+  public async repost(postId: string, userId: string): Promise<PostEntity> {
+    const originalPost = await this.postRepository.findById(postId);
+
+    if (!originalPost) {
+      throw new NotFoundException(`Post with ID ${postId} not found`);
+    }
+
+    if (originalPost.userId === userId) {
+      throw new BadRequestException(`You can't repost your own post`);
+    }
+
+    const existRepost = await this.postRepository.findRepost(postId, userId);
+
+    if (existRepost) {
+      throw new BadRequestException(`You can't repost post more than 1 time`);
+    }
+
+    const repost = PostEntity.fromObject({
+      ...originalPost.toPOJO(),
+      id: undefined,
+      userId: userId,
+      originalId: originalPost.id,
+      originalUserId: originalPost.userId,
+      isRepost: true,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    });
+
+    await this.postRepository.save(repost);
+
+    return repost;
   }
 
   public async deletePost(id: string): Promise<void> {
@@ -46,29 +73,29 @@ export class PostService {
     }
   }
 
-  public async updatePost(id: string, dto: UpdatePostDto): Promise<PostEntityType> {
+  public async updatePost(id: string, dto: UpdatePostDto): Promise<PostEntity> {
     const existsPost = await this.postRepository.findById(id);
-    let isSameCategories = true;
+    let isSameTags = true;
     let hasChanges = false;
 
     for (const [key, value] of Object.entries(dto)) {
-      if (value !== undefined && key !== 'categories' && existsPost[key] !== value) {
+      if (value !== undefined && key !== 'tags' && existsPost[key] !== value) {
         existsPost[key] = value;
         hasChanges = true;
       }
 
-      if (key === 'categories' && value) {
+      if (key === 'tags' && value) {
         const currentCategoryIds = existsPost.tags.map((category) => category.id);
-        isSameCategories = currentCategoryIds.length === value.length &&
+        isSameTags = currentCategoryIds.length === value.length &&
           currentCategoryIds.some((categoryId) => value.includes(categoryId));
 
-        if (! isSameCategories) {
+        if (! isSameTags) {
           existsPost.tags = await this.tagService.getTagsByIds(dto.tags);
         }
       }
     }
 
-    if (isSameCategories && ! hasChanges) {
+    if (isSameTags && ! hasChanges) {
       return existsPost;
     }
 

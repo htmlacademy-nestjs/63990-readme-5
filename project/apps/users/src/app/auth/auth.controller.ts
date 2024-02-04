@@ -19,6 +19,13 @@ export class AuthController {
     private readonly authService: AuthService,
     private readonly notifyService: NotifyService,
   ) {}
+
+  @Get('findUsers')
+  public async getUsers(@Body() { userIds }: { userIds: string[] }) {
+
+    const existUsers = await this.authService.findUsers(userIds);
+    return fillDto(UserRdo, existUsers);
+  }
   
   @ApiResponse({
     status: HttpStatus.CREATED,
@@ -76,4 +83,6 @@ export class AuthController {
   public async checkToken(@Req() { user: payload }: RequestWithTokenPayload) {
     return payload;
   }
+
+
 }

@@ -43,10 +43,6 @@ export class BlogTagRepository extends BasePostgresRepository<BlogTagEntity, Tag
       },
     });
 
-    if (! document) {
-      throw new NotFoundException(`Tag with title ${title} not found.`);
-    }
-
     return this.createEntityFromDocument(document);
   }
 

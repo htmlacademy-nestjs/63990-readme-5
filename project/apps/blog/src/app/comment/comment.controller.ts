@@ -1,16 +1,17 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Query } from '@nestjs/common';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { CommentService } from './comment.service';
 import { fillDto } from '@project/shared/helpers';
 import { CommentRdo } from './rdo/comment.rdo';
+import { CommentQuery } from './query/comment.query';
 
-@Controller('posts/:postId/comments')
+@Controller('comments')
 export class CommentController {
   constructor(
     private commentService: CommentService
   ) {}
 
-  @Post('/')
+  @Post('/post/:postId')
   public async create(
     @Param('postId') postId: string, 
     @Body() dto: CreateCommentDto
@@ -19,10 +20,21 @@ export class CommentController {
     return fillDto(CommentRdo, newComment.toPOJO());
   }
   
-  @Get('/')
-  public async show(@Param('postId') postId: string) {
-    const comments = await this.commentService.getComments(postId);
+  @Get('/post/:postId')
+  public async show(
+    @Param('postId') postId: string,
+    @Query() query: CommentQuery
+  ) {
+    const comments = await this.commentService.getComments(postId, query);
 
     return fillDto(CommentRdo, comments.map((comment) => comment.toPOJO()));
+  }
+
+  @Delete('/:commentId')
+  public async delete(
+    @Param('commentId') commentId: string,
+    @Body() {userId}
+  ) {
+    return this.commentService.deleteComment(commentId, userId);
   }
 }

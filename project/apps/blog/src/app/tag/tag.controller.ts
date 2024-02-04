@@ -4,7 +4,8 @@ import { CreateTagDto } from './dto/create-tag.dto';
 import { fillDto } from '@project/shared/helpers';
 import { TagRdo } from './rdo/tag.rdo';
 import { UpdateTagDto } from './dto/update-tag.dto';
-@Controller('categories')
+
+@Controller('tags')
 export class BlogTagController {
   constructor(
     private readonly blogTagService: BlogTagService
@@ -17,8 +18,8 @@ export class BlogTagController {
 
   @Post('/')
   public async create(@Body() dto: CreateTagDto) {
-    const newCategory = await this.blogTagService.createTag(dto);
-    return fillDto(TagRdo, newCategory.toPOJO());
+    const newTag = await this.blogTagService.createTag(dto);
+    return fillDto(TagRdo, newTag.toPOJO());
   }
 
   @Delete('/:id')
@@ -29,7 +30,7 @@ export class BlogTagController {
 
   @Patch('/:id')
   public async update(@Param('id') id: string, @Body() dto: UpdateTagDto) {
-    const updatedCategory = await this.blogTagService.updateTag(id, dto);
-    return fillDto(TagRdo, updatedCategory.toPOJO());
+    const updatedTag = await this.blogTagService.updateTag(id, dto);
+    return fillDto(TagRdo, updatedTag.toPOJO());
   }
 }

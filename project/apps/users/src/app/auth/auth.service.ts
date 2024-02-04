@@ -93,4 +93,9 @@ export class AuthService {
       throw new HttpException('Ошибка при создании токена.', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
+
+  public async findUsers(ids: string[]) {
+    const users = await this.blogUserRepository.findByIds(ids);
+    return users;
+  }
 }

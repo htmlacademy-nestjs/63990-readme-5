@@ -9,6 +9,7 @@ import { JwtAccessStrategy } from './strategies/jwt-access.strategy';
 import { NotifyModule } from '../notify/notify.module';
 import { LocalStrategy } from './strategies/local.strategy';
 import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
+import { RefreshTokenModule } from '../refresh-token/refresh-token.module';
 
 @Module({
   controllers: [AuthController],
@@ -24,7 +25,8 @@ import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
       inject: [ConfigService],
       useFactory: getJwtOptions
     }),
-    NotifyModule
+    NotifyModule,
+    RefreshTokenModule
   ]
 })
 export class AuthModule {}

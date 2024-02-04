@@ -3,11 +3,9 @@ import { CreatePostDto } from './dto/create-post.dto';
 import { fillDto } from '@project/shared/helpers';
 import { PostService } from './post.service';
 import { postRdoMap } from './rdo/post-rdo.map';
-import { PostValidationPipe } from './pipes/post-validation.pipe';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { BlogPostQuery } from './query/post.query';
 import { PostWithPaginationRdo } from './rdo/post-with-pagination.rdo';
-import { CreateTextPostDto } from './dto/create-text-post.dto';
 
 @Controller('posts')
 export class PostController {
@@ -23,18 +21,20 @@ export class PostController {
   }
 
   @Get('/')
-  public async index(@Query() query: BlogPostQuery) {
-    const postsWithPagination = await this.postService.getAllPosts(query);
+  public async index(
+    @Query() query: BlogPostQuery,
+    @Body() dto: {userId: string},
+  ) {
+    const postsWithPagination = await this.postService.getAllPosts(query, dto.userId);
     const result = {
       ...postsWithPagination,
       entities: postsWithPagination.entities.map((post) => post.toPOJO()),
     }
     return fillDto(PostWithPaginationRdo, result);
   }
-
+  
   @Post('/')
-  @UsePipes(new PostValidationPipe('create'))
-  public async create(@Body() dto: CreateTextPostDto) { // TODO: dto types
+  public async create(@Body() dto: CreatePostDto) {
     const newPost = await this.postService.createPost(dto);
 
     const rdo = postRdoMap[newPost.type];
@@ -48,11 +48,22 @@ export class PostController {
   }
 
   @Patch('/:id')
-  @UsePipes(new PostValidationPipe('update'))
   public async update(@Param('id') id: string, @Body() dto: UpdatePostDto) {
     const updatedPost = await this.postService.updatePost(id, dto);
 
     const rdo = postRdoMap[updatedPost.type];
     return fillDto(rdo, updatedPost.toPOJO());
+  }
+
+  @Post('/:id/repost')
+  public async repost(
+    @Body() { userId }: {userId: string},
+    @Param('id') id: string
+  ) {
+    console.log(userId)
+    const repost = await this.postService.repost(id, userId);
+
+    const rdo = postRdoMap[repost.type];
+    return fillDto(rdo, repost.toPOJO());
   }
 }

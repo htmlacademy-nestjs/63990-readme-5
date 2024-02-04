@@ -18,6 +18,12 @@ export class UsersController {
     return data;
   }
 
+  @Post('register')
+  public async register(@Body() loginUserDto: LoginUserDto) {
+    const { data } = await this.httpService.axiosRef.post(`${ApplicationServiceURL.Users}/register`, loginUserDto);
+    return data;
+  }
+
   @Post('refresh')
   public async refreshToken(@Req() req: Request) {
     const { data } = await this.httpService.axiosRef.post(`${ApplicationServiceURL.Users}/refresh`, null, {
